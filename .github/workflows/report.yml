@@ -1,0 +1,47 @@
+name: Report
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: FAForever/fa
+          ref: deploy/fafdevelop
+          path: FARepo
+
+      - uses: actions/checkout@v2
+
+      - name: Setup FAFLuaJit
+        run: |
+          curl -L "https://github.com/FAForever/FAFLuaJit/releases/latest/download/FAFLuaJit.zip" -o FAFLuaJit.zip
+          unzip FAFLuaJit.zip
+
+      - name: Make Report
+        run: |
+          mkdir Report
+          cd Report
+          ../luajit.exe ../LOCChecker.lua ../FARepo
+
+      - name: Create Draft Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: Report
+          release_name: Report
+
+      - name: Upload Report
+        id: upload_Report
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Report
+          asset_name: Report
+          asset_content_type: application/octet-stream
