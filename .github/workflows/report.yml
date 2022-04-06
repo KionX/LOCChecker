@@ -1,0 +1,35 @@
+name: Report
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get fafdevelop
+        uses: actions/checkout@v2
+        with:
+          repository: FAForever/fa
+          ref: deploy/fafdevelop
+          path: FARepo
+
+      - name: Setup FAFLuaJit
+        run: |
+          curl -L "https://github.com/FAForever/FAFLuaJit/releases/latest/download/FAFLuaJit.zip" -o FAFLuaJit.zip
+          unzip FAFLuaJit.zip
+
+      - name: Make Report
+        run: |
+          mkdir Report
+          cd Report
+          ../luajit.exe ../LOCChecker.lua ../FARepo
+
+      - name: Upload Report
+        id: upload_Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: Report
+          path: Report/
